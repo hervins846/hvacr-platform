@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  # 1. Broker MQTT pour l'ingestion des données IoT en temps réel
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: hvacr_mqtt
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    restart: unless-stopped
+
+  # 2. Base de données PostgreSQL / TimescaleDB pour l'historique des mesures
+  db:
+    image: timescale/timescaledb:latest-pg14
+    container_name: hvacr_db
+    environment:
+      POSTGRES_USER: hvacr_admin
+      POSTGRES_PASSWORD: securepassword123
+      POSTGRES_DB: hvacr_production
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # 3. API Backend FastAPI
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    container_name: hvacr_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://hvacr_admin:securepassword123@db:5432/hvacr_production
+      - MQTT_HOST=mqtt
+    depends_on:
+      - db
+      - mqtt
+    restart: unless-stopped
+
+volumes:
+  pgdata:

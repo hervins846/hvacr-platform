@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: API FastAPI",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "services.api.main:app",
+        "--reload",
+        "--port",
+        "8000"
+      ],
+      "jinja": true,
+      "justMyCode": true
+    },
+    {
+      "name": "Node: Simulateur HVACR",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/simulator/src/main.js",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Node: Scénario de Panne",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/apps/simulator/src/run_scenario.js",
+      "console": "integratedTerminal"
+    }
+  ]
+}

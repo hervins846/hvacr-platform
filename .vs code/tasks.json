@@ -1,0 +1,78 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "1. Infra: Démarrer Docker (MQTT + TimescaleDB)",
+      "command": "docker-compose",
+      "args": [
+        "-f",
+        "infra/docker-compose.yml",
+        "up",
+        "-d"
+      ],
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "2. API: Lancer FastAPI",
+      "command": "uvicorn",
+      "args": [
+        "services.api.main:app",
+        "--reload",
+        "--port",
+        "8000"
+      ],
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "3. Ingestion: Lancer le Bridge MQTT",
+      "command": "python",
+      "args": [
+        "services/ingestion/bridge.py"
+      ],
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "4. Simulator: Lancer le Jumeau Numérique",
+      "command": "node",
+      "args": [
+        "apps/simulator/src/main.js"
+      ],
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "🚀 Démarrer tout (Infrastructure + API)",
+      "dependsOn": [
+        "1. Infra: Démarrer Docker (MQTT + TimescaleDB)",
+        "2. API: Lancer FastAPI"
+      ],
+      "dependsOrder": "sequence",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "silent"
+      }
+    }
+  ]
+}

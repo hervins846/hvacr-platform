@@ -1,0 +1,9 @@
+{
+  "name": "hvacr-simulator",
+  "version": "1.0.0",
+  "description": "Simulateur de chambre froide industrielle pour la plateforme HVACR",
+  "main": "src/main.js",
+  "dependencies": {
+    "mqtt": "^5.0.0"
+  }
+}

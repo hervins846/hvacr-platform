@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HVACR - Visualisation 2D & 3D Multi-Fréon</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: #f8fafc;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .card {
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 20px;
+        flex: 1;
+        min-width: 450px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+      h2 {
+        font-size: 1.2rem;
+        color: #38bdf8;
+        margin-top: 0;
+      }
+      canvas {
+        width: 100%;
+        height: 300px;
+        background: #090d16;
+        border-radius: 8px;
+      }
+      .controls {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      select,
+      button {
+        background: #334155;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      select:hover,
+      button:hover {
+        background: #475569;
+      }
+    </style>
+    <!-- Inclusion de Three.js pour la 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  </head>
+  <body>
+    <h1>Supervision Visuelle - Équipement : eq_chambre_01</h1>
+
+    <div class="container">
+      <!-- VUE 2D : Schéma P&ID du Circuit Frigorifique -->
+      <div class="card">
+        <h2>📊 Schéma 2D du Circuit & Fluide Frigorigène</h2>
+        <canvas id="canvas2D"></canvas>
+        <div class="controls">
+          <label>Fluide Fréon :</label>
+          <select id="refrigerantSelect" onchange="updateRefrigerant()">
+            <option value="R134a">R134a (Standard)</option>
+            <option value="R404A">R404A (Basse Température)</option>
+            <option value="R744">R744 (CO2 Écologique)</option>
+          </select>
+          <span id="fluidStatus" style="font-size: 0.9rem; color: #4ade80"
+            >● Pression Stable</span
+          >
+        </div>
+      </div>
+
+      <!-- VUE 3D : Jumeau Numérique (Compresseur / Chambre) -->
+      <div class="card">
+        <h2>🧊 Modèle 3D du Jumeau Numérique</h2>
+        <div
+          id="canvas3D"
+          style="
+            width: 100%;
+            height: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+          "
+        ></div>
+        <div class="controls">
+          <button onclick="toggleCompressor3D()">
+            Activer / Couper Compresseur
+          </button>
+          <span id="status3D" style="font-size: 0.9rem; color: #38bdf8"
+            >État : En marche (Running)</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- LOGIQUE 2D (Canvas) ---
+      const canvas2D = document.getElementById("canvas2D");
+      const ctx = canvas2D.getContext("2d");
+      let currentRefrigerant = "R134a";
+
+      function draw2DSchematic() {
+        canvas2D.width = canvas2D.clientWidth;
+        canvas2D.height = canvas2D.clientHeight;
+
+        ctx.clearRect(0, 0, canvas2D.width, canvas2D.height);
+
+        // Dessin des tuyaux du circuit frigorifique
+        ctx.strokeStyle = currentRefrigerant === "R744" ? "#f43f5e" : "#38bdf8"; // Rouge pour CO2, Bleu pour R134a
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.rect(50, 50, canvas2D.width - 100, canvas2D.height - 100);
+        ctx.stroke();
+
+        // Composants (Compresseur, Condenseur, Évaporateur)
+        ctx.fillStyle = "#334155";
+        ctx.fillRect(80, 80, 80, 60); // Compresseur
+        ctx.fillRect(canvas2D.width - 160, 80, 80, 60); // Condenseur
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "12px Arial";
+        ctx.fillText("COMPRESSEUR", 85, 115);
+        ctx.fillText("CONDENSEUR", canvas2D.width - 155, 115);
+        ctx.fillText(
+          `Fluide actif: ${currentRefrigerant}`,
+          70,
+          canvas2D.height - 70,
+        );
+      }
+
+      function updateRefrigerant() {
+        currentRefrigerant = document.getElementById("refrigerantSelect").value;
+        draw2DSchematic();
+      }
+
+      window.addEventListener("resize", draw2DSchematic);
+      draw2DSchematic();
+
+      // --- LOGIQUE 3D (Three.js) ---
+      const container3D = document.getElementById("canvas3D");
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        container3D.clientWidth / container3D.clientHeight,
+        0.1,
+        1000,
+      );
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+
+      renderer.setSize(container3D.clientWidth, container3D.clientHeight);
+      container3D.appendChild(renderer.domElement);
+
+      // Création d'un bloc représentant le compresseur/chambre en 3D
+      const geometry = new THREE.BoxGeometry(2, 1.5, 1.5);
+      const material = new THREE.MeshStandardMaterial({
+        color: 0x38bdf8,
+        roughness: 0.3,
+      });
+      const compressorBox = new THREE.Mesh(geometry, material);
+      scene.add(compressorBox);
+
+      // Éclairage
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+      const pointLight = new THREE.PointLight(0xffffff, 1);
+      pointLight.position.set(5, 5, 5);
+      scene.add(pointLight);
+
+      camera.position.z = 4;
+
+      let isRunning3D = true;
+      function toggleCompressor3D() {
+        isRunning3D = !isRunning3D;
+        material.color.setHex(isRunning3D ? 0x38bdf8 : 0xef4444); // Bleu si marche, Rouge si arrêté
+        document.getElementById("status3D").innerText = isRunning3D
+          ? "État : En marche (Running)"
+          : "État : Arrêté / Alerte";
+      }
+
+      // Animation de rotation du modèle 3D
+      function animate() {
+        requestAnimationFrame(animate);
+        if (isRunning3D) {
+          compressorBox.rotation.y += 0.01;
+        }
+        renderer.render(scene, camera);
+      }
+      animate();
+    </script>
+  </body>
+</html>

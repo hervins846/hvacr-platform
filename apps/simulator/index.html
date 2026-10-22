@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Platform HVACR Intelligente et Analyse 4.0</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      body {
+        background-color: #0b0f19;
+        color: #ffffff;
+        padding: 20px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #131b2e;
+        padding: 15px 25px;
+        border-radius: 12px;
+        border: 1px solid #1e293b;
+        margin-bottom: 20px;
+      }
+      h1 {
+        font-size: 1.4rem;
+        color: #38bdf8;
+      }
+      .lang-flags span {
+        cursor: pointer;
+        font-size: 1.2rem;
+        margin-left: 10px;
+      }
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+      .bottom-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+      }
+      .card {
+        background: #131b2e;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+      .card h3 {
+        font-size: 1rem;
+        margin-bottom: 15px;
+        color: #94a3b8;
+      }
+      .visual-container {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        background: #090d16;
+        padding: 15px;
+        border-radius: 8px;
+        height: 220px;
+        justify-content: center;
+        color: #64748b;
+        font-style: italic;
+        border: 1px dashed #334155;
+        text-align: center;
+      }
+      .metrics-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #cbd5e1;
+      }
+      select {
+        width: 100%;
+        padding: 10px;
+        background: #1e293b;
+        color: white;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+      .highlight-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #38bdf8;
+      }
+      .status-running {
+        color: #4ade80;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>🌐 Platform HVACR Intelligente et Analyse 4.0</h1>
+      <div class="lang-flags">
+        <span>🇫🇷</span> <span>🇬🇧</span> <span>🇨🇳</span>
+      </div>
+    </header>
+
+    <!-- Grille Supérieure : Jumeau Numérique & Schéma P&ID -->
+    <div class="dashboard-grid">
+      <div class="card">
+        <h3>Jumeau Numérique 3D & État de Maintenance (eq_chambre_01)</h3>
+        <div class="visual-container">
+          [Modèle 3D Interactif - Compresseur Semi-Hermétique & Condenseur à
+          air]
+        </div>
+        <div class="metrics-row">
+          <span
+            >État :
+            <span class="status-running">En marche (Running)</span></span
+          >
+          <span>Taux d'Usure : <strong>88%</strong></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Schéma P&ID Dynamique (Circulation Fréon HP / BP)</h3>
+        <div
+          class="visual-container"
+          style="background: #05070b; border-color: #ef4444"
+        >
+          [Synoptique Circuit Frigorifique - Refoulement HP (16 bar / 75°C) &
+          Aspiration BP (2 bar / -15°C)]
+        </div>
+        <div class="metrics-row">
+          <span>Surchauffe ($\Delta T_{sur}$) : <strong>8 K</strong></span>
+          <span
+            >Sous-refroidissement ($\Delta T_{se}$) : <strong>5 K</strong></span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Grille Inférieure : Tendances, IA Prédictive, Thermodynamique & Fluides -->
+    <div class="bottom-grid">
+      <div class="card">
+        <h3>Courbe de Tendance (T&P et COP)</h3>
+        <div
+          style="
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #090d16;
+            border-radius: 6px;
+            color: #64748b;
+            font-size: 0.85rem;
+          "
+        >
+          [Graphique Temps Réel T°, Pression & COP]
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Maintenance Prédictive & IA</h3>
+        <div style="text-align: center; padding: 10px 0">
+          <div class="highlight-value" style="color: #f59e0b">88%</div>
+          <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 5px">
+            Analyse Vibratoire :
+            <span style="color: #ef4444"
+              >Critique - Maintenance conseillée sous 48h</span
+            >
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Calculs Thermodynamiques & COP</h3>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <div>
+            <p style="font-size: 0.85rem; color: #94a3b8">COP Froid :</p>
+            <div class="highlight-value">4.8</div>
+          </div>
+          <div style="text-align: right; font-size: 0.85rem; color: #cbd5e1">
+            <p>Puissance ($\Phi_f$) : <strong>35.2 kW</strong></p>
+            <p>Débit massique : <strong>0.19 kg/s</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Sélection Fluide Frigorigène</h3>
+        <label for="fluid-select" style="font-size: 0.85rem; color: #94a3b8"
+          >Fluide Actif :</label
+        >
+        <select id="fluid-select">
+          <option value="R134a">R134a (Standard)</option>
+          <option value="R404A">R404A (Basse Température)</option>
+          <option value="R744">R744 (CO2 Écologique)</option>
+          <option value="R22">R22 (Ancien / Rétrofit)</option>
+          <option value="R290">R290 (Propane - Hydrocarbure)</option>
+          <option value="R410A">R410A (Clim & Pompes à Chaleur)</option>
+          <option value="R1234yf">R1234yf (Faible GWP)</option>
+          <option value="R407C">R407C (Remplacement R22)</option>
+        </select>
+      </div>
+    </div>
+
+    <script>
+      // Connexion dynamique avec le backend FastAPI
+      fetch("http://127.0.0.1:8000/refrigerant/eq_chambre_01")
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Données de supervision chargées avec succès :", data);
+        })
+        .catch((error) =>
+          console.log("Mode autonome actif ou serveur en attente."),
+        );
+    </script>
+  </body>
+</html>

@@ -1,0 +1,292 @@
+/* --- Variables & Thème Sombre Industriel --- */
+:root {
+  --bg-dark: #0f172a;
+  --card-bg: #1e293b;
+  --border-color: #334155;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --accent: #38bdf8;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* --- Barre de Navigation --- */
+.navbar {
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo h1 {
+  font-size: 1.3rem;
+  color: var(--text-main);
+}
+
+.user-panel {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 0.9rem;
+}
+
+/* --- Badges --- */
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+.badge-admin {
+  background-color: var(--primary);
+  color: white;
+}
+.badge-warning {
+  background-color: var(--warning);
+  color: black;
+}
+
+/* --- Structure du Dashboard --- */
+.dashboard-container {
+  display: flex;
+  flex: 1;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  width: 280px;
+  background-color: var(--card-bg);
+  border-right: 1px solid var(--border-color);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.sidebar h3 {
+  font-size: 1rem;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+select {
+  background-color: #0f172a;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  border-radius: 6px;
+  outline: none;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  margin: 10px 0;
+}
+
+/* --- Boutons --- */
+.btn {
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-primary {
+  background-color: var(--primary);
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+.btn-warning {
+  background-color: var(--warning);
+  color: black;
+}
+.btn-danger {
+  background-color: var(--danger);
+}
+.btn-secondary {
+  background-color: var(--border-color);
+}
+
+/* --- Zone Principale --- */
+.main-content {
+  flex: 1;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* --- Métriques KPIs --- */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.kpi-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kpi-card.highlight {
+  border-color: var(--accent);
+}
+
+.kpi-card h4 {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.kpi-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--text-main);
+}
+
+.kpi-value .unit {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.kpi-status {
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+.status-ok {
+  color: var(--success);
+}
+.status-warning {
+  color: var(--warning);
+}
+
+/* --- Section Visualisation 2D / 3D --- */
+.visualizer-section {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.section-header h2 {
+  font-size: 1.1rem;
+  color: var(--accent);
+}
+
+.tab-btn {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.view-container {
+  width: 100%;
+  height: 350px;
+  background-color: #090d16;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#canvas3D,
+canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.hidden {
+  display: none;
+}
+
+/* --- Section Table d'Alarmes --- */
+.alarms-section {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.alarms-section h2 {
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 15px;
+}
+
+.alarms-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.alarms-table th {
+  background-color: #0f172a;
+  color: var(--text-muted);
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.alarms-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border-color);
+}
