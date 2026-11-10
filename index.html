@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HVACR Intelligent Pro - Ing. Franck Hervins</title>
+    <!-- Chargement direct du style Tailwind CSS & des bibliothèques chart.js et jsPDF -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .panel-light { 
+            background: #ffffff; 
+            border: 1px solid #cbd5e1; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+        }
+        @keyframes dash { 
+            to { stroke-dashoffset: -20; } 
+        }
+        .anim-flow { 
+            stroke-dasharray: 8, 8; 
+            animation: dash 0.8s linear infinite; 
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+
+    <!-- Écran d'accueil épuré, professionnel et élégant -->
+    <div id="welcome-modal" class="fixed inset-0 bg-slate-900/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white max-w-md w-full p-8 rounded-3xl border border-slate-200 text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600"></div>
+            
+            <!-- Visuel Flocon / Réfrigérant -->
+            <div class="text-6xl mb-3">❄️</div>
+
+            <h2 class="text-2xl font-black text-slate-900 mb-1">Bonjour et Bienvenue</h2>
+            <p class="text-blue-600 text-[11px] uppercase tracking-widest font-bold mb-6">HVACR Intelligent • Plateforme Professionnelle</p>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 mb-6 text-left space-y-3">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Nom & Prénom</label>
+                    <input type="text" id="userNameInput" value="Ing. Franck Hervins" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Titre / Fonction</label>
+                    <select id="userTitleInput" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500">
+                        <option value="Ingénieur Bureau d'Études">Ingénieur Bureau d'Études</option>
+                        <option value="Responsable Maintenance">Responsable Maintenance</option>
+                        <option value="Technicien Frigoriste F-Gas">Technicien Frigoriste / Chargé de Gaz</option>
+                        <option value="Auditeur Expert">Auditeur Expert</option>
+                    </select>
+                </div>
+            </div>
+
+            <button onclick="enterSystem()" class="w-full py-3.5 px-6 rounded-xl font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30 transition-all cursor-pointer text-sm">
+                Accéder au Centre de Pilotage →
+            </button>
+        </div>
+    </div>
+
+    <!-- Application Principale -->
+    <div id="app-content" class="p-4 lg:p-6 space-y-6 max-w-[1800px] mx-auto hidden">
+        
+        <!-- Header -->
+        <header class="panel-light p-4 rounded-xl flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-blue-100 text-blue-600 rounded-lg text-xl font-bold">❄️</div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        HVACR Intelligent <span class="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-bold border border-blue-200">PRO</span>
+                    </h1>
+                    <p class="text-xs text-slate-500">Opérateur : <span id="display-user-role" class="text-blue-600 font-semibold"></span></p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+                    <span class="text-slate-500 font-medium">Base Fréons (ISO 817) :</span>
+                    <select id="fluidSelect" onchange="runCalculationEngine()" class="bg-transparent text-blue-600 font-bold focus:outline-none cursor-pointer max-w-[240px]">
+                        <optgroup label="HFC & Standards">
+                            <option value="R134a">R134a (PRG: 1430)</option>
+                            <option value="R404A">R404A (PRG: 3922)</option>
+                            <option value="R410A">R410A (PRG: 2088)</option>
+                            <option value="R32">R32 (PRG: 675)</option>
+                            <option value="R407C">R407C (PRG: 1774)</option>
+                            <option value="R22">R22 (PRG: 1810)</option>
+                        </optgroup>
+                        <optgroup label="Hydrocarbures & HCs">
+                            <option value="R290">R290 Propane (PRG: 3)</option>
+                            <option value="R600a">R600a Isobutane (PRG: 3)</option>
+                            <option value="R1270">R1270 Propylène (PRG: 3)</option>
+                        </optgroup>
+                        <optgroup label="HFO & Faible PRG">
+                            <option value="R1234yf">R1234yf (PRG: 4)</option>
+                            <option value="R513A">R513A (PRG: 631)</option>
+                            <option value="R454C">R454C (PRG: 148)</option>
+                        </optgroup>
+                        <optgroup label="Fluides Naturels">
+                            <option value="R744">R744 CO2 (PRG: 1)</option>
+                            <option value="R717">R717 Ammoniac (PRG: 0)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> LIVE MONITORING
+                </div>
+            </div>
+        </header>
+
+        <!-- Commandes & Bouton START Actif -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="panel-light p-4 rounded-xl space-y-3">
+                <h3 class="text-sm font-bold text-blue-600 flex items-center justify-between">
+                    <span>⚙️ Entrées Manuelles Pressions</span>
+                    <button onclick="applyManualStart(event)" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow transition-all cursor-pointer flex items-center gap-1">
+                        ▶️ START
+                    </button>
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-500">Pression BP (bar)</label>
+                        <input type="number" id="inputBP" step="0.1" value="3.1" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-blue-600 font-bold focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">Pression HP (bar)</label>
+                        <input type="number" id="inputHP" step="0.1" value="13.4" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-rose-600 font-bold focus:outline-none">
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-400">Modifiez et appuyez sur START pour propager.</p>
+            </div>
+
+            <div class="panel-light p-4 rounded-xl space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-blue-600">🌡️ Température Extérieure</h3>
+                    <span id="tempExtVal" class="text-sm font-bold text-amber-600">25 °C</span>
+                </div>
+                <input type="range" id="tempExt" min="-20" max="30" value="25" oninput="document.getElementById('tempExtVal').innerText = this.value + ' °C'; runCalculationEngine();" class="w-full accent-blue-600 cursor-pointer">
+                <div class="flex justify-between text-[10px] text-slate-400 font-bold"><span>-20 °C</span><span>+5 °C</span><span>+30 °C</span></div>
+            </div>
+
+            <div class="panel-light p-4 rounded-xl space-y-3">
+                <h3 class="text-sm font-bold text-blue-600">🎛️ Simulation de Scénarios</h3>
+                <div class="grid grid-cols-3 gap-1.5">
+                    <button id="btnNormal" onclick="setScenario('normal')" class="py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold shadow cursor-pointer">Normal</button>
+                    <button id="btnLeak" onclick="setScenario('leak')" class="py-2 rounded-lg bg-slate-100 border border-amber-300 text-amber-700 text-xs font-bold cursor-pointer">Fuite</button>
+                    <button id="btnOverload" onclick="setScenario('overload')" class="py-2 rounded-lg bg-slate-100 border border-rose-300 text-rose-700 text-xs font-bold cursor-pointer">Surcharge</button>
+                </div>
+                <div id="scenarioStatus" class="text-[11px] text-emerald-600 font-semibold text-center">État : Nominal stable</div>
+            </div>
+        </div>
+
+        <!-- Centre de Diagnostic avec Localisation Précise de la Ligne -->
+        <div class="panel-light p-5 rounded-2xl border-l-4 border-l-blue-600 space-y-3">
+            <div class="flex justify-between items-center">
+                <h2 class="text-md font-bold text-blue-600 flex items-center gap-2">🧠 Centre de Diagnostic & Localisation des Lignes</h2>
+                <span id="diag-badge" class="px-2.5 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-700">Conforme</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                    <span class="text-slate-500 font-semibold uppercase text-[10px]">Ligne & Composant Cible :</span>
+                    <p id="diag-line" class="font-bold text-blue-600">Ligne Principale / Circuit Général</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                    <span class="text-slate-500 font-semibold uppercase text-[10px]">Causes Racines Analysées :</span>
+                    <p id="diag-causes" class="font-bold text-slate-800">Aucune dérive détectée sur le circuit.</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                    <span class="text-slate-500 font-semibold uppercase text-[10px]">Actions Correctives Recommandées :</span>
+                    <p id="diag-actions" class="font-bold text-emerald-600">Poursuivre le monitoring de routine.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schéma Synoptique Unifié & Redimensionné -->
+        <div class="panel-light p-5 rounded-2xl">
+            <h2 class="text-md font-bold text-blue-600 mb-4">🔄 Circuit Frigorifique Interactif (Synoptique Adapté)</h2>
+            <div class="relative w-full bg-slate-900 rounded-xl p-4 border border-slate-800 flex items-center justify-center min-h-[260px]">
+                <svg viewBox="0 0 700 280" class="w-full max-w-[850px] h-auto">
+                    <path d="M 130 190 L 130 80 L 250 80" fill="none" stroke="#334155" stroke-width="5"/>
+                    <path d="M 350 80 L 470 80 L 470 190 L 370 190" fill="none" stroke="#334155" stroke-width="5"/>
+                    <path d="M 370 190 L 260 190 L 130 190" fill="none" stroke="#334155" stroke-width="5"/>
+
+                    <path d="M 130 190 L 130 80 L 250 80" fill="none" stroke="#38bdf8" stroke-width="3.5" class="anim-flow"/>
+                    <path d="M 350 80 L 470 80 L 470 190 L 370 190" fill="none" stroke="#f43f5e" stroke-width="3.5" class="anim-flow"/>
+                    <path d="M 370 190 L 260 190 L 130 190" fill="none" stroke="#38bdf8" stroke-width="3.5" class="anim-flow"/>
+
+                    <g transform="translate(80, 100)">
+                        <rect width="100" height="70" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2" id="box-evap"/>
+                        <text x="50" y="30" text-anchor="middle" fill="#f8fafc" font-size="10" font-weight="bold">ÉVAPORATEUR</text>
+                        <text x="50" y="48" text-anchor="middle" id="svg-evap-val" fill="#38bdf8" font-size="10" font-weight="bold">BP: 3.1 bar</text>
+                    </g>
+                    <g transform="translate(250, 45)">
+                        <rect width="100" height="65" rx="8" fill="#1e293b" stroke="#f43f5e" stroke-width="2" id="box-comp"/>
+                        <text x="50" y="20" text-anchor="middle" fill="#f8fafc" font-size="10" font-weight="bold">COMPRESSEUR</text>
+                        <text x="50" y="35" text-anchor="middle" id="svg-t8-val" fill="#f43f5e" font-size="9" font-weight="bold">T8: 72.5°C</text>
+                        <text x="50" y="50" text-anchor="middle" id="svg-comp-status" fill="#10b981" font-size="9">Normal</text>
+                    </g>
+                    <g transform="translate(420, 100)">
+                        <rect width="100" height="70" rx="8" fill="#1e293b" stroke="#f43f5e" stroke-width="2" id="box-cond"/>
+                        <text x="50" y="30" text-anchor="middle" fill="#f8fafc" font-size="10" font-weight="bold">CONDENSEUR</text>
+                        <text x="50" y="48" text-anchor="middle" id="svg-cond-val" fill="#f43f5e" font-size="10" font-weight="bold">HP: 13.4 bar</text>
+                    </g>
+                    <g transform="translate(300, 175)">
+                        <rect width="45" height="26" rx="4" fill="#334155" stroke="#38bdf8" stroke-width="1.5"/>
+                        <text x="22" y="17" text-anchor="middle" fill="#38bdf8" font-size="8" font-weight="bold">FILTRE</text>
+                    </g>
+                    <g transform="translate(250, 170)">
+                        <polygon points="35,8 12,28 58,28" fill="#38bdf8"/>
+                        <polygon points="35,48 12,28 58,28" fill="#f43f5e"/>
+                        <text x="35" y="60" text-anchor="middle" fill="#f8fafc" font-size="8" font-weight="bold">DÉTENDEUR</text>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Moteur Thermodynamique Central -->
+        <div class="panel-light p-5 rounded-2xl space-y-3">
+            <h2 class="text-md font-bold text-blue-600">🧮 Moteur Thermodynamique & Bilan Énergétique</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                <div class="p-3 bg-slate-50 rounded-lg border border-slate-200"><span class="text-slate-500 block mb-1">Puissance Frigorifique (Q0) :</span><strong id="calc-q0" class="text-blue-600 text-sm">12.45 kW</strong></div>
+                <div class="p-3 bg-slate-50 rounded-lg border border-slate-200"><span class="text-slate-500 block mb-1">Puissance Absorbée (Wcomp) :</span><strong id="calc-wcomp" class="text-rose-600 text-sm">2.85 kW</strong></div>
+                <div class="p-3 bg-slate-50 rounded-lg border border-slate-200"><span class="text-slate-500 block mb-1">Débit Massique :</span><strong id="calc-flow" class="text-amber-600 text-sm">0.082 kg/s</strong></div>
+                <div class="p-3 bg-slate-50 rounded-lg border border-slate-200"><span class="text-slate-500 block mb-1">COP Unifié :</span><strong id="calc-cop" class="text-emerald-600 text-sm">4.37</strong></div>
+            </div>
+        </div>
+
+        <!-- Oscilloscopes Vivants de Contrôle -->
+        <h2 class="text-lg font-bold text-slate-800 pt-2">⚡ Oscilloscopes de Contrôle & Signaux IoT en Temps Réel</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="panel-light p-4 rounded-2xl flex flex-col justify-between space-y-3">
+                <div class="flex justify-between items-center"><h3 class="text-sm font-bold text-slate-900">Compresseur</h3><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">Vib RMS</span></div>
+                <div class="h-32 w-full bg-slate-900 rounded-lg p-1"><canvas id="oscComp"></canvas></div>
+                <div class="text-[11px] text-slate-500">Vibration : <strong id="val-vib" class="text-slate-700">1.8 mm/s</strong></div>
+            </div>
+            <div class="panel-light p-4 rounded-2xl flex flex-col justify-between space-y-3">
+                <div class="flex justify-between items-center"><h3 class="text-sm font-bold text-slate-900">Condenseur</h3><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">Puls HP</span></div>
+                <div class="h-32 w-full bg-slate-900 rounded-lg p-1"><canvas id="oscCond"></canvas></div>
+                <div class="text-[11px] text-slate-500">Stabilité : <strong id="val-cond-stab" class="text-blue-600">Optimale</strong></div>
+            </div>
+            <div class="panel-light p-4 rounded-2xl flex flex-col justify-between space-y-3">
+                <div class="flex justify-between items-center"><h3 class="text-sm font-bold text-slate-900">Détendeur</h3><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">Surchauffe</span></div>
+                <div class="h-32 w-full bg-slate-900 rounded-lg p-1"><canvas id="oscDet"></canvas></div>
+                <div class="text-[11px] text-slate-500">Régulation : <strong id="val-det-reg" class="text-amber-600">Active</strong></div>
+            </div>
+            <div class="panel-light p-4 rounded-2xl flex flex-col justify-between space-y-3">
+                <div class="flex justify-between items-center"><h3 class="text-sm font-bold text-slate-900">Évaporateur</h3><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 text-cyan-700">Puls BP</span></div>
+                <div class="h-32 w-full bg-slate-900 rounded-lg p-1"><canvas id="oscEvap"></canvas></div>
+                <div class="text-[11px] text-slate-500">Perte de charge : <strong id="val-evap-drop" class="text-cyan-600">&lt; 0.2 bar</strong></div>
+            </div>
+        </div>
+
+        <!-- Bilan Fiabilité & MTBF / MTTR Dynamiques -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="panel-light p-5 rounded-2xl flex flex-col justify-between space-y-3">
+                <h2 class="text-md font-bold text-blue-600">⏳ Fiabilité, MTBF & MTTR Variables en Direct</h2>
+                <div class="space-y-2 text-xs mb-2">
+                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200"><span>MTBF / MTTR :</span><strong id="val-mtbf" class="text-blue-600 text-sm">14 500 hrs / 3.2 hrs</strong></div>
+                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200"><span>Disponibilité Globale :</span><strong id="val-availability" class="text-emerald-600 text-sm">99.97 %</strong></div>
+                </div>
+                <div class="h-40 w-full bg-slate-50 p-2 rounded-xl border border-slate-200">
+                    <canvas id="rulChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel-light p-5 rounded-2xl flex flex-col justify-between space-y-3">
+                <h2 class="text-md font-bold text-blue-600">🌍 Bilan TEWI & Rapport d'Expertise</h2>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200"><span class="text-slate-500">PRG du Fluide :</span><strong id="val-prg" class="text-blue-600">1430</strong></div>
+                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200"><span class="text-slate-500">Impact Direct (Fuites) :</span><strong id="tewi-direct" class="text-amber-600">1.85 t.CO2eq</strong></div>
+                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200"><span class="text-slate-500">Impact Indirect (Énergie) :</span><strong id="tewi-indirect" class="text-slate-700">9.40 t.CO2eq</strong></div>
+                    <div class="flex justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200"><span class="text-slate-500">TEWI Total (Cumulé 15 ans) :</span><strong id="val-tewi" class="text-purple-600 text-sm">11.25 t.CO2eq</strong></div>
+                </div>
+                <button onclick="exportOfficialPDF()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow transition-all cursor-pointer">
+                    📄 Générer le Rapport Technique PDF Officiel
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Moteur JavaScript -->
+    <script>
+        let oscComp, oscCond, oscDet, oscEvap, rulChart;
+        let animationCounter = 0;
+        let currentScenario = 'normal';
+
+        const fluidDatabase = { 
+            'R134a': { prg: 1430, factor: 1.00 }, 'R404A': { prg: 3922, factor: 0.88 },
+            'R410A': { prg: 2088, factor: 0.96 }, 'R32': { prg: 675, factor: 1.08 },
+            'R407C': { prg: 1774, factor: 0.97 }, 'R22': { prg: 1810, factor: 0.95 },
+            'R290': { prg: 3, factor: 1.18 }, 'R600a': { prg: 3, factor: 1.14 },
+            'R1270': { prg: 3, factor: 1.16 }, 'R1234yf': { prg: 4, factor: 1.02 },
+            'R513A': { prg: 631, factor: 0.99 }, 'R454C': { prg: 148, factor: 1.04 },
+            'R744': { prg: 1, factor: 0.80 }, 'R717': { prg: 0, factor: 1.28 }
+        };
+
+        function enterSystem() {
+            const name = document.getElementById('userNameInput').value || "Ing. Franck Hervins";
+            const title = document.getElementById('userTitleInput').value || "Ingénieur";
+            
+            document.getElementById('display-user-role').innerText = title + " — " + name;
+            document.getElementById('welcome-modal').classList.add('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
+            
+            initOscilloscopes();
+            initRulChart();
+            runCalculationEngine();
+            setInterval(liveOscilloscopeLoop, 100);
+        }
+
+        function applyManualStart(event) {
+            runCalculationEngine();
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "✔️ APPLIQUÉ !";
+            btn.className = "px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow transition-all cursor-pointer flex items-center gap-1";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.className = "px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow transition-all cursor-pointer flex items-center gap-1";
+            }, 1000);
+        }
+
+        function setScenario(type) {
+            currentScenario = type;
+            const btnNormal = document.getElementById('btnNormal');
+            const btnLeak = document.getElementById('btnLeak');
+            const btnOverload = document.getElementById('btnOverload');
+            const status = document.getElementById('scenarioStatus');
+
+            btnNormal.className = "py-2 rounded-lg bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold cursor-pointer";
+            btnLeak.className = "py-2 rounded-lg bg-slate-100 border border-amber-300 text-amber-700 text-xs font-bold cursor-pointer";
+            btnOverload.className = "py-2 rounded-lg bg-slate-100 border border-rose-300 text-rose-700 text-xs font-bold cursor-pointer";
+
+            if (type === 'normal') {
+                btnNormal.className = "py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold shadow cursor-pointer";
+                status.innerText = "État : Nominal stable";
+                document.getElementById('inputBP').value = "3.1";
+                document.getElementById('inputHP').value = "13.4";
+            } else if (type === 'leak') {
+                btnLeak.className = "py-2 rounded-lg bg-amber-500 text-white text-xs font-bold shadow cursor-pointer";
+                status.innerText = "🚨 Scénario : Fuite de fluide simulée";
+                document.getElementById('inputBP').value = "1.6";
+                document.getElementById('inputHP').value = "10.2";
+            } else if (type === 'overload') {
+                btnOverload.className = "py-2 rounded-lg bg-rose-500 text-white text-xs font-bold shadow cursor-pointer";
+                status.innerText = "🚨 Scénario : Surcharge thermique";
+                document.getElementById('inputBP').value = "4.5";
+                document.getElementById('inputHP').value = "21.0";
+            }
+            runCalculationEngine();
+        }
+
+        function runCalculationEngine() {
+            let bp = parseFloat(document.getElementById('inputBP').value) || 3.1;
+            let hp = parseFloat(document.getElementById('inputHP').value) || 13.4;
+            let tempExt = parseFloat(document.getElementById('tempExt').value) || 25;
+            let fluidKey = document.getElementById('fluidSelect').value;
+            let fluid = fluidDatabase[fluidKey] || { prg: 1430, factor: 1.00 };
+
+            document.getElementById('val-prg').innerText = fluid.prg;
+
+            let ratio = hp / (bp > 0 ? bp : 0.1);
+            let cop = Math.max(1.0, parseFloat(((5.5 - (ratio * 0.25) - (tempExt * 0.01)) * fluid.factor).toFixed(2)));
+            let flow = parseFloat((0.045 + (bp * 0.012)).toFixed(3));
+            let q0 = parseFloat((flow * 150 * fluid.factor * (1 - (tempExt * 0.003))).toFixed(2));
+            let wcomp = parseFloat((q0 / cop).toFixed(2));
+            let t8 = parseFloat((30 + (hp * 3.2) + (tempExt * 0.4)).toFixed(1));
+
+            document.getElementById('svg-evap-val').innerText = "BP: " + bp.toFixed(1) + " bar";
+            document.getElementById('svg-cond-val').innerText = "HP: " + hp.toFixed(1) + " bar";
+            document.getElementById('svg-t8-val').innerText = "T8: " + t8 + "°C";
+
+            document.getElementById('calc-q0').innerText = q0 + " kW";
+            document.getElementById('calc-wcomp').innerText = wcomp + " kW";
+            document.getElementById('calc-flow').innerText = flow + " kg/s";
+            document.getElementById('calc-cop').innerText = cop;
+
+            const badge = document.getElementById('diag-badge');
+            const lineElem = document.getElementById('diag-line');
+            const causes = document.getElementById('diag-causes');
+            const actions = document.getElementById('diag-actions');
+            const compStatus = document.getElementById('svg-comp-status');
+            const boxEvap = document.getElementById('box-evap');
+            const boxComp = document.getElementById('box-comp');
+            const boxCond = document.getElementById('box-cond');
+
+            let mtbfVal = 14500;
+            let mttrVal = 3.2;
+            let availVal = 99.97;
+            let vibVal = "1.8 mm/s";
+            let condStab = "Optimale";
+            let detReg = "Active";
+            let evapDrop = "< 0.2 bar";
+
+            if (bp < 2.0) {
+                badge.innerText = "Anomalie : Sous-charge / Fuite";
+                badge.className = "px-2.5 py-1 rounded text-xs font-bold bg-amber-100 text-amber-700 animate-pulse";
+                lineElem.innerText = "🚨 Ligne Basse Pression / Évaporateur (BP = " + bp + " bar)";
+                causes.innerText = "1. Fuite de fluide frigorigène.\n2. Restriction sur le détendeur.";
+                actions.innerText = "👉 Inspecter les brasures et recharger en gaz.";
+                compStatus.innerText = "Sous-charge";
+                compStatus.setAttribute("fill", "#f59e0b");
+                boxEvap.setAttribute("stroke", "#f59e0b");
+                boxComp.setAttribute("stroke", "#f59e0b");
+                boxCond.setAttribute("stroke", "#38bdf8");
+                mtbfVal = 6200; mttrVal = 8.5; availVal = 96.50; vibVal = "3.4 mm/s (Instable)"; evapDrop = "> 0.6 bar (Anormal)";
+            } else if (hp > 18.0) {
+                badge.innerText = "Alerte : Surpression HP";
+                badge.className = "px-2.5 py-1 rounded text-xs font-bold bg-rose-100 text-rose-700 animate-pulse";
+                lineElem.innerText = "🚨 Ligne Haute Pression / Condenseur (HP = " + hp + " bar)";
+                causes.innerText = "1. Condenseur encrassé / surchauffe extérieure.\n2. Excès de charge en fluide.";
+                actions.innerText = "👉 Nettoyer les batteries du condenseur ou purger.";
+                compStatus.innerText = "Surpression HP";
+                compStatus.setAttribute("fill", "#e11d48");
+                boxCond.setAttribute("stroke", "#e11d48");
+                boxComp.setAttribute("stroke", "#e11d48");
+                boxEvap.setAttribute("stroke", "#38bdf8");
+                mtbfVal = 4800; mttrVal = 12.0; availVal = 94.20; condStab = "Critique / Surchauffe"; vibVal = "4.2 mm/s (Alerte)";
+            } else {
+                badge.innerText = "Conforme (Stable)";
+                badge.className = "px-2.5 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-700";
+                lineElem.innerText = "✅ Ligne Principale / Circuit Stable (BP: " + bp + " / HP: " + hp + ")";
+                causes.innerText = "Aucune dérive significative relevée sur les lignes.";
+                actions.innerText = "👉 Poursuivre le monitoring de routine.";
+                compStatus.innerText = "Normal";
+                compStatus.setAttribute("fill", "#10b981");
+                boxEvap.setAttribute("stroke", "#38bdf8");
+                boxComp.setAttribute("stroke", "#f43f5e");
+                boxCond.setAttribute("stroke", "#f43f5e");
+            }
+
+            document.getElementById('val-mtbf').innerText = mtbfVal.toLocaleString() + " hrs / " + mttrVal + " hrs";
+            document.getElementById('val-availability').innerText = availVal + " %";
+            document.getElementById('val-vib').innerText = vibVal;
+            document.getElementById('val-cond-stab').innerText = condStab;
+            document.getElementById('val-det-reg').innerText = detReg;
+            document.getElementById('val-evap-drop').innerText = evapDrop;
+
+            let leakRate = (bp < 2.0) ? 0.38 : 0.035;
+            let tewiDir = ((3.5 * leakRate * 15 * fluid.prg) / 1000).toFixed(2);
+            let tewiInd = (9.2 * (4 / cop)).toFixed(2);
+            let tewiTot = (parseFloat(tewiDir) + parseFloat(tewiInd)).toFixed(2);
+
+            document.getElementById('tewi-direct').innerText = tewiDir + " t.CO2eq";
+            document.getElementById('tewi-indirect').innerText = tewiInd + " t.CO2eq";
+            document.getElementById('val-tewi').innerText = tewiTot + " t.CO2eq";
+        }
+
+        function initOscilloscopes() {
+            const oscOpts = { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                animation: false,
+                scales: { x: { display: false }, y: { display: false } },
+                plugins: { legend: { display: false } },
+                elements: { point: { radius: 0 } }
+            };
+
+            const initData = Array(20).fill(5);
+
+            oscComp = new Chart(document.getElementById('oscComp'), {
+                type: 'line',
+                data: { labels: Array(20).fill(''), datasets: [{ data: [...initData], borderColor: '#10b981', borderWidth: 2, fill: false }] },
+                options: oscOpts
+            });
+
+            oscCond = new Chart(document.getElementById('oscCond'), {
+                type: 'line',
+                data: { labels: Array(20).fill(''), datasets: [{ data: [...initData], borderColor: '#38bdf8', borderWidth: 2, fill: false }] },
+                options: oscOpts
+            });
+
+            oscDet = new Chart(document.getElementById('oscDet'), {
+                type: 'line',
+                data: { labels: Array(20).fill(''), datasets: [{ data: [...initData], borderColor: '#f59e0b', borderWidth: 2, fill: false }] },
+                options: oscOpts
+            });
+
+            oscEvap = new Chart(document.getElementById('oscEvap'), {
+                type: 'line',
+                data: { labels: Array(20).fill(''), datasets: [{ data: [...initData], borderColor: '#06b6d4', borderWidth: 2, fill: false }] },
+                options: oscOpts
+            });
+        }
+
+        function initRulChart() {
+            const ctx = document.getElementById('rulChart').getContext('2d');
+            rulChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Compresseur', 'Condenseur', 'Détendeur', 'Évaporateur'],
+                    datasets: [{
+                        label: 'Santé Composants (%)',
+                        data: [98, 95, 99, 97],
+                        backgroundColor: ['#10b981', '#38bdf8', '#f59e0b', '#06b6d4'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { min: 0, max: 100 } }
+                }
+            });
+        }
+
+        function liveOscilloscopeLoop() {
+            animationCounter += 0.3;
+            if (!oscComp) return;
+
+            let noise = Math.sin(animationCounter) * 2;
+            
+            oscComp.data.datasets[0].data.shift();
+            oscComp.data.datasets[0].data.push(5 + noise);
+            oscComp.update();
+
+            oscCond.data.datasets[0].data.shift();
+            oscCond.data.datasets[0].data.push(5 + Math.cos(animationCounter) * 1.5);
+            oscCond.update();
+
+            oscDet.data.datasets[0].data.shift();
+            oscDet.data.datasets[0].data.push(5 + Math.sin(animationCounter * 0.8) * 2);
+            oscDet.update();
+
+            oscEvap.data.datasets[0].data.shift();
+            oscEvap.data.datasets[0].data.push(5 + Math.cos(animationCounter * 1.2) * 1.8);
+            oscEvap.update();
+        }
+
+        function exportOfficialPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(16);
+            doc.text("HVACR Intelligent PRO - Rapport Technique", 20, 20);
+            doc.setFontSize(11);
+            doc.text("Opérateur : " + document.getElementById('display-user-role').innerText, 20, 30);
+            doc.text("Fluide Frigorigène : " + document.getElementById('fluidSelect').value, 20, 40);
+            doc.text("COP Unifié : " + document.getElementById('calc-cop').innerText, 20, 50);
+            doc.text("Bilan TEWI Total : " + document.getElementById('val-tewi').innerText, 20, 60);
+            doc.text("Diagnostic : " + document.getElementById('diag-badge').innerText, 20, 70);
+            
+            doc.save("Rapport_HVACR_Pro.pdf");
+        }
+    </script>
+</body>
+</html>
